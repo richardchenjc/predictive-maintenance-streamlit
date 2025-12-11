@@ -1,0 +1,16 @@
+# 1. DATA SECURITY (Never push these)
+data/
+*.csv
+*.xlsx
+*.pkl
+
+# 2. SYSTEM FILES (Noise)
+__pycache__/
+*.ipynb_checkpoints
+.DS_Store
+.vscode/
+
+# 3. ENVIRONMENT (If you use venv/conda)
+env/
+venv/
+.env
