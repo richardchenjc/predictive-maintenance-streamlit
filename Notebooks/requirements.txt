@@ -7,3 +7,4 @@ imbalanced-learn
 lightgbm
 shap
 joblib
+streamlit
