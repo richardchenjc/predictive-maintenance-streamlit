@@ -15,6 +15,19 @@ st.set_page_config(
     layout="wide"
 )
 
+#----
+#Debug
+# DEBUGGING BLOCK
+import os
+print("Current Working Directory:", os.getcwd())
+print("Files in current folder:", os.listdir())
+if os.path.exists("data"):
+    print("Files in data:", os.listdir("data"))
+    if os.path.exists("data/processed"):
+        print("Files in data/processed:", os.listdir("data/processed"))
+else:
+    print("ERROR: 'data' folder not found in current directory.")
+#----
 # ---------------------------------------------------------
 # 2. LOAD THE MODEL
 # ---------------------------------------------------------
@@ -169,3 +182,4 @@ if st.button("🔍 Run Diagnostics"):
                          feature_names=artifact['features'])
     )
     st.pyplot(fig)
+
