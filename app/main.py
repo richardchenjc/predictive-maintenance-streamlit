@@ -15,33 +15,37 @@ st.set_page_config(
     layout="wide"
 )
 
-#----
-#Debug
-# DEBUGGING BLOCK
-import os
-print("Current Working Directory:", os.getcwd())
-print("Files in current folder:", os.listdir())
-if os.path.exists("data"):
-    print("Files in data:", os.listdir("data"))
-    if os.path.exists("data/processed"):
-        print("Files in data/processed:", os.listdir("data/processed"))
-else:
-    print("ERROR: 'data' folder not found in current directory.")
-#----
 # ---------------------------------------------------------
 # 2. LOAD THE MODEL
 # ---------------------------------------------------------
 @st.cache_resource
 def load_model():
-    # Robust path handling
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(current_dir, '..', 'data', 'processed', 'predictive_maintenance_model.pkl')
+    model_filename = "predictive_maintenance_model.pkl"
     
-    try:
-        artifact = joblib.load(model_path)
-        return artifact
-    except FileNotFoundError:
-        return None
+    # 1. Try the hardcoded path first (Fastest)
+    # Adjust this if your structure is different
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    potential_paths = [
+        os.path.join(current_dir, '..', 'data', 'processed', model_filename),
+        os.path.join(current_dir, 'data', 'processed', model_filename),
+        os.path.join(current_dir, model_filename)
+    ]
+    
+    for path in potential_paths:
+        if os.path.exists(path):
+            return joblib.load(path)
+
+    # 2. If that fails, SEARCH the entire directory tree (The "Search & Rescue")
+    # Start looking from the current directory upwards
+    root_dir = os.path.abspath(os.path.join(current_dir, '..'))
+    
+    for root, dirs, files in os.walk(root_dir):
+        if model_filename in files:
+            found_path = os.path.join(root, model_filename)
+            return joblib.load(found_path)
+            
+    # 3. If still not found, return None
+    return None
 
 artifact = load_model()
 
