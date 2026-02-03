@@ -5,6 +5,12 @@ import numpy as np
 import os
 import shap
 import matplotlib.pyplot as plt
+import warnings
+
+# Suppress warnings
+warnings.filterwarnings("ignore", message=".*Trying to unpickle estimator LabelEncoder.*")
+warnings.filterwarnings("ignore", message=".*LightGBM binary classifier.*")
+warnings.filterwarnings("ignore", message=".*FigureCanvasAgg is non-interactive.*")
 
 # ---------------------------------------------------------
 # 1. CONFIGURATION & SETUP
@@ -183,7 +189,8 @@ if st.button("🔍 Run Diagnostics"):
         shap.Explanation(values=sv[0], 
                          base_values=explainer.expected_value[1] if isinstance(explainer.expected_value, list) else explainer.expected_value, 
                          data=df_input.iloc[0],
-                         feature_names=artifact['features'])
+                         feature_names=artifact['features']),
+        show=False
     )
     st.pyplot(fig)
 

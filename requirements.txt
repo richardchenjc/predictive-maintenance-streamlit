@@ -8,3 +8,4 @@ lightgbm
 shap
 joblib
 streamlit
+tensorflow
