@@ -65,19 +65,25 @@ These figures should not be compared directly against published benchmarks on th
 ## Project structure
 
 ```
-predictive-maintenance/
+predictive-maintenance-streamlit/
 ├── app/
 │   ├── main.py                       # Streamlit fleet dashboard
 │   ├── diagnostic_translator.py      # SHAP-to-operator-language layer
-│   └── anomaly_detection.py          # Autoencoder training script
+│   ├── anomaly_detection.py          # Autoencoder training script
+│   └── smoke_test.py                 # Standalone model sanity check
 ├── notebooks/
-│   ├── 01_data_ingestion.ipynb       # Load and clean AI4I 2020
-│   ├── 02_feature_engineering.ipynb  # Temp_Delta, Power_W, Risk_Heuristic
-│   ├── 03_model_training.ipynb       # LightGBM with cost-aware threshold
-│   ├── 04_model_explanation.ipynb    # SHAP analysis
-│   ├── 05_cost_analysis.ipynb        # Threshold selection under cost asymmetry
-│   └── 06_anomaly_detection_demo.ipynb  # Autoencoder OOD demonstration
-├── data/
+│   ├── 01_data_ingestion_and_cleaning.ipynb   # Load and clean AI4I 2020
+│   ├── 02_feature_engineering.ipynb           # Temp_Delta, Power_W, Risk_Heuristic
+│   ├── 03_data_visualisation.ipynb            # EDA on engineered features, stall-zone analysis
+│   ├── 04_model_training.ipynb                # LightGBM with cost-aware threshold
+│   ├── 05_model_explanation.ipynb             # SHAP analysis
+│   ├── 06_cost_analysis.ipynb                 # Threshold selection under cost asymmetry
+│   └── 07_anomaly_detection_demo.ipynb        # Autoencoder OOD demonstration
+├── figures/                          # Generated plots (regenerated when notebooks run)
+│   ├── 01_correlation_drivers.png
+│   ├── 02_distribution_shift.png
+│   └── 03_risk_profile.png
+├── data/                             # Local only, gitignored
 │   ├── raw/                          # AI4I 2020 source CSV
 │   └── processed/                    # Cleaned and featured CSVs, model pkl
 ├── requirements.txt
