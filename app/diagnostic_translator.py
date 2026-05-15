@@ -51,19 +51,20 @@ SHAP_DOMINANT = 0.15  # roughly 3x significant
 
 # Risk category boundaries on predicted probability.
 # Calibrated against the cost-optimal threshold from 06_cost_analysis.ipynb.
-# The cost-optimal cut-point is approximately 0.06 (matching the theoretical
-# Bayes-optimal threshold p* = c_FP / (c_FP + c_FN) = 6300 / 106300 = 0.059).
+# The empirical cost-optimal cut-point is approximately 0.01 (the theoretical
+# Bayes-optimal is 0.059; empirical lands lower due to under-prediction in
+# the model's low-probability tail).
 #
-# HEALTHY  (<0.06):    Below the cost-optimal cut-point. No action needed.
-# ADVISORY (0.06-0.20): Above the cut-point but absolute risk modest.
+# HEALTHY  (<0.01):    Below the cost-optimal cut-point. No action needed.
+# ADVISORY (0.01-0.10): Above the cut-point but absolute risk modest.
 #                       Log for engineer review; schedule inspection
 #                       at next convenient window.
-# WARNING  (0.20-0.50): Meaningful elevation above the cut-point.
+# WARNING  (0.10-0.50): Meaningful elevation above the cut-point.
 #                       Address proactively; do not defer past current shift.
 # CRITICAL (>=0.50):   Strong evidence of imminent failure. Stop operation,
 #                      investigate immediately.
-PROB_ADVISORY = 0.06     # below this is Healthy
-PROB_WARNING = 0.20      # at/above this is Warning
+PROB_ADVISORY = 0.01     # below this is Healthy
+PROB_WARNING = 0.10      # at/above this is Warning
 PROB_CRITICAL = 0.50     # at/above this is Critical
 
 # Stall zone definition (from EDA in 03_data_visualisation.ipynb)
@@ -256,11 +257,14 @@ def translate_shap(
         )
 
     # Pattern 4: Mechanical overstrain
-    # Combined SHAP contribution from Power_W and Risk_Heuristic
-    # Indicates the multiplicative power × thermal stress effect
+    # SHAP dominated by Power_W contribution; indicates the model is attributing
+    # risk to high mechanical power output. In the new feature set we don't
+    # combine with Risk_Heuristic (dropped as redundant for tree models), so
+    # we rely on Power_W SHAP alone. Energy_Per_Wear is the closest related
+    # feature; we include it as a secondary signal.
     power_shap = shap_values.get("Power_W", 0.0)
-    risk_heuristic_shap = shap_values.get("Risk_Heuristic", 0.0)
-    combined_power_shap = power_shap + risk_heuristic_shap
+    energy_per_wear_shap = shap_values.get("Energy_Per_Wear", 0.0)
+    combined_power_shap = power_shap + 0.5 * energy_per_wear_shap
     if combined_power_shap > SHAP_DOMINANT:
         power_raw = raw_inputs.get("Power_W", 0.0)
         return Diagnosis(
@@ -338,7 +342,7 @@ def _self_test() -> None:
             "shap": {"Temp_Delta": -0.02, "Power_W": 0.01, "Tool_Wear": 0.0, "Torque": -0.01},
             "raw": {"Temp_Delta": 9.5, "Power_W": 5000, "Tool_Wear": 50,
                     "Torque": 40, "Rotational_Speed": 1700},
-            "prob": 0.03,
+            "prob": 0.005,
             "expected_pattern": "healthy_default",
         },
         {
@@ -367,7 +371,7 @@ def _self_test() -> None:
         },
         {
             "name": "Mechanical overstrain case",
-            "shap": {"Power_W": 0.22, "Risk_Heuristic": 0.15, "Torque": 0.08, "Temp_Delta": 0.06},
+            "shap": {"Power_W": 0.22, "Energy_Per_Wear": 0.12, "Torque": 0.08, "Temp_Delta": 0.06},
             "raw": {"Temp_Delta": 11.0, "Power_W": 9200, "Tool_Wear": 120,
                     "Torque": 65, "Rotational_Speed": 1500},
             "prob": 0.78,
